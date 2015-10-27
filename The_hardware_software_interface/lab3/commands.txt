@@ -1,0 +1,2 @@
+file ./bufbomb
+r -u 3864075 < dynamite.bytes
