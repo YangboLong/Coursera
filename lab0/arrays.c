@@ -131,5 +131,13 @@ int main(int argc, char* argv[]) {
   // you would expect. (Hint, you'll need to use the
   // -> operator to access fields of a FourInts*
   // variable instead of the . operator).
+  FourInts* heap_struct = malloc(sizeof(FourInts));
+  fillArray((int*) heap_struct, 4);
+  assert(heap_struct->a == 2);
+  assert(heap_struct->b == 5);
+  assert(heap_struct->c == 8);
+  assert(heap_struct->d == 11);
+  free(heap_struct);
+
   return 0;
 }

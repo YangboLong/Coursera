@@ -120,7 +120,11 @@ NOTES:
  *   Rating: 1
  */
 int bitAnd(int x, int y) {
-  return 2;
+  // Refer to the law: ~(x & y) = ~x | ~y
+  int x1 = ~x, y1 = ~y;
+  int z = x1 | y1;
+ 
+  return ~z;
 }
 /* 
  * bitXor - x^y using only ~ and & 
@@ -130,7 +134,9 @@ int bitAnd(int x, int y) {
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  // initially i used |, which is actually not allowed:
+//  return (x & ~y) | (y & ~x);
+  return ~(~x & ~y);
 }
 /* 
  * thirdBits - return word with every third bit (starting from the LSB) set to 1
@@ -140,7 +146,10 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int thirdBits(void) {
-  return 2;
+  int x = 0x49; // the least byte
+  int y = (0x92 << 8) + (0x24 << 16) + (x << 24); // the first three bytes
+  
+  return x + y; // return the complete word
 }
 // Rating: 2
 /* 
@@ -153,7 +162,10 @@ int thirdBits(void) {
  *   Rating: 2
  */
 int fitsBits(int x, int n) {
-  return 2;
+  int a = 32 + (~n + 1); // 32 - n leading bits
+  int b = (x << a) >> a; // copy nth bit into leading 32-n bits
+
+  return !(b ^ x); // if b == x?
 }
 /* 
  * sign - return 1 if positive, 0 if zero, and -1 if negative
@@ -164,7 +176,11 @@ int fitsBits(int x, int n) {
  *  Rating: 2
  */
 int sign(int x) {
-  return 2;
+  int sbit = (x >> 31) & 1; // the sign bit, either 0 or 1
+  int equal0 = !x; // if x is zero, either 0 or 1
+  int p_or_z = (((sbit << 31) >> 31) & ~0) + ((((!sbit) << 31) >> 31) & (1 ^ equal0));
+  
+  return p_or_z;
 }
 /* 
  * getByte - Extract byte n from word x
@@ -175,7 +191,9 @@ int sign(int x) {
  *   Rating: 2
  */
 int getByte(int x, int n) {
-  return 2;
+  int y = x >> (n << 3); // move the byte to extract to the end
+
+  return y & 0xff;
 }
 // Rating: 3
 /* 
@@ -187,7 +205,9 @@ int getByte(int x, int n) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-  return 2;
+  int mask = ((1 << 31) >> n) << 1; // set the leading n bits
+  
+  return (x >> n) & ~mask;
 }
 /* 
  * addOK - Determine if can compute x+y without overflow
@@ -198,7 +218,12 @@ int logicalShift(int x, int n) {
  *   Rating: 3
  */
 int addOK(int x, int y) {
-  return 2;
+  int z = x + y; // sum
+  int sx = (x >> 31) & 1; // sign of x
+  int sy = (y >> 31) & 1; // sign of y
+  int sz = (z >> 31) & 1; // sign of z
+
+  return !(sz ^ sx) | !(sz ^ sy);
 }
 // Rating: 4
 /* 
@@ -209,7 +234,13 @@ int addOK(int x, int y) {
  *   Rating: 4 
  */
 int bang(int x) {
-  return 2;
+  // when x = 0, the sign bit of x | -x is 0;
+  // when x != 0, the sign bit is 1;
+  // after rightshift 31 bits it becomes 0 or 0xffffffff
+  int neg_x = ~x + 1; // -x
+  int sign = (x | neg_x) >> 31;
+
+  return sign + 1;
 }
 // Extra Credit: Rating: 3
 /* 
@@ -220,7 +251,9 @@ int bang(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  int a = !x;
+  
+  return (((a << 31) >> 31) & z) + (((!a << 31) >> 31) & y);
 }
 // Extra Credit: Rating: 4
 /*
@@ -232,5 +265,8 @@ int conditional(int x, int y, int z) {
  *   Rating: 4
  */
 int isPower2(int x) {
-  return 2;
+  // if x and x-1 have any bits in common, then x is not a power of 2
+  int sign = x >> 31; // in case of negative value
+  // xor with !x to deal with the case of x = 0 
+  return (!(x & (x + ~0)) ^ !x) & ~sign;
 }
