@@ -4,21 +4,21 @@ Lab 4 - Mystery Caches
 
 Mystery Cache Geometries (for you to keep notes):
 mystery0:
-    block size =
-    cache size =
-    associativity =
+    block size = 64 bytes
+    cache size = 4096 bytes
+    associativity = 32
 mystery1:
-    block size =
-    cache size =
-    associativity =
+    block size = 8 bytes
+    cache size = 8192 bytes
+    associativity = 8
 mystery2:
-    block size =
-    cache size =
-    associativity =
+    block size = 32 bytes
+    cache size = 32768 bytes
+    associativity = 2
 mystery3:
-    block size =
-    cache size =
-    associativity =
+    block size = 16 bytes
+    cache size = 4096 bytes
+    associativity = 1
 */
 
 #include <stdlib.h>
@@ -39,8 +39,38 @@ mystery3:
 */
 int get_block_size(void) {
   /* YOUR CODE GOES HERE */
+  access_cache(0);
+  if(access_cache(127))
+    return 128;
+  flush_cache();
+  access_cache(0);
+  if(access_cache(63))
+    return 64;
+  flush_cache();
+  access_cache(0);
+  if(access_cache(31))
+    return 32;
+  flush_cache();
+  access_cache(0);
+  if(access_cache(15))
+    return 16;
+  flush_cache();
+  access_cache(0);
+  if(access_cache(7))
+    return 8;
+  flush_cache();
+  access_cache(0);
+  if(access_cache(3))
+    return 4;
 
   return -1;
+  
+  // alternative method
+  // access_cache(0);
+  // int i = 1;
+  // while(access_cache(i) == TRUE)
+  // 	i++;
+  // return i;
 }
 
 /*
@@ -48,8 +78,30 @@ int get_block_size(void) {
 */
 int get_cache_size(int size) {
   /* YOUR CODE GOES HERE */
+  int count = 1;
+  while(1) {
+    flush_cache();
+    int i = 0;
+    for(; i <= count; i++)
+	access_cache(size * i);
+    if(access_cache(0))
+	count++;
+    else
+	break;
+  }
 
-  return -1;
+  return size * count;
+
+  // original code below doesn't work since the 0 was accessed many times
+  // so it's no longer the least recently used element in the cache
+  // flush_cache();
+  // access_cache(0);
+  // int count = 0;
+  // while(access_cache(0)) {
+  //   count++;
+  //   access_cache(size * count);
+  // }
+  // return size * count;
 }
 
 /*
@@ -57,8 +109,23 @@ int get_cache_size(int size) {
 */
 int get_cache_assoc(int size) {
   /* YOUR CODE GOES HERE */
+  // for a n-way set, to kick out the first element
+  // you have to access the same set n times repeatedly
+  int count = 1; // number of associativity
+  while(1) {
+    flush_cache();
+    access_cache(0); // the first address to access
+    int i = 1; // tentative associativity
+    for(; i <= count; i++) { // always access the same set (set 0)
+      access_cache(i * size);
+    }
+    if(access_cache(0)) // has more ways
+	count++;
+    else // the least recently used element has been kicked out
+	break;
+  }
 
-  return -1;
+  return count;
 }
 
 //// DO NOT CHANGE ANYTHING BELOW THIS POINT
